@@ -77,9 +77,7 @@ func main() {
 		})
 	})
 
-	router.Use(rateLimiter.Middleware())
-
-	router.POST("/completions", completionsHandler.HandleCompletion)
+	router.POST("/completions", rateLimiter.Middleware(), completionsHandler.HandleCompletion)
 
 	port := os.Getenv("PORT")
 
