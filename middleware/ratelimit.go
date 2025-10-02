@@ -24,6 +24,12 @@ func NewRateLimiter(redisClient *redis.Client) *RateLimiter {
 
 func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// Skip rate limiting for OPTIONS requests (CORS preflight)
+		if c.Request.Method == "OPTIONS" {
+			c.Next()
+			return
+		}
+
 		ip := c.ClientIP()
 
 		blacklistKey := fmt.Sprintf("blacklist:%s", ip)
