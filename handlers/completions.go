@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,8 @@ func NewCompletionsHandler(apiKey string) *CompletionsHandler {
 }
 
 func (h *CompletionsHandler) HandleCompletion(c *gin.Context) {
+	fmt.Print("starting completion...")
+
 	var req CompletionRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
