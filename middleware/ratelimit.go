@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"beia/bootstrap/app"
 	"context"
 	"fmt"
 	"net/http"
@@ -11,14 +12,16 @@ import (
 )
 
 type RateLimiter struct {
-	redis *redis.Client
-	ctx   context.Context
+	redis  *redis.Client
+	limits app.RateLimits
+	ctx    context.Context
 }
 
-func NewRateLimiter(redisClient *redis.Client) *RateLimiter {
+func NewRateLimiter(redisClient *redis.Client, limits app.RateLimits) *RateLimiter {
 	return &RateLimiter{
-		redis: redisClient,
-		ctx:   context.Background(),
+		redis:  redisClient,
+		limits: limits,
+		ctx:    context.Background(),
 	}
 }
 
@@ -52,7 +55,7 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		if dailyCount >= 100 {
+		if dailyCount >= rl.limits.PerDay {
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error": "Daily limit of 100 requests exceeded",
 			})
@@ -70,7 +73,7 @@ func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 			return
 		}
 
-		if requestCount >= 10 {
+		if requestCount >= rl.limits.PerMinute {
 			rl.redis.Set(rl.ctx, blacklistKey, "1", 7*24*time.Hour)
 			c.JSON(http.StatusForbidden, gin.H{
 				"error": "Rate limit exceeded. IP banned for 1 week",

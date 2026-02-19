@@ -1,15 +1,15 @@
 {
   "port": {
-    "default": "3000",
+    "default": "8080",
     "env": "PORT"
   },
   "env:redis-url.key": "REDIS_URL",
   "env:open-ai.key": "OPENAI_KEY",
   "redis:client-opt": {
-    "DialTimeout": 10,
-    "ReadTimeout": 5,
-    "WriteTimeout": 5,
-    "PoolTimeout": 10,
+    "DialTimeout": "10s",
+    "ReadTimeout": "5s",
+    "WriteTimeout": "5s",
+    "PoolTimeout": "10s",
     "MaxRetries": 3
   },
   "rate-limit:limits": {

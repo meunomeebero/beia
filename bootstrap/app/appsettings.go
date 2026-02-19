@@ -1,10 +1,25 @@
-package bootstrap
+package app
 
 import (
 	"encoding/json"
 	"os"
 	"time"
 )
+
+type Duration time.Duration
+
+func (d *Duration) UnmarshalJSON(b []byte) error {
+	var s string
+	if err := json.Unmarshal(b, &s); err != nil {
+		return err
+	}
+	parsed, err := time.ParseDuration(s)
+	if err != nil {
+		return err
+	}
+	*d = Duration(parsed)
+	return nil
+}
 
 type App struct {
 	Port          Port          `json:"port"`
@@ -13,36 +28,44 @@ type App struct {
 	RateLimits    RateLimits    `json:"rate-limit:limits"`
 	ClientOptions ClientOptions `json:"redis:client-opt"`
 }
+
 type Port struct {
 	Default string `json:"default"`
 	Env     string `json:"env"`
 }
+
 type RateLimits struct {
 	PerMinute int `json:"RequestPerMinute"`
 	PerDay    int `json:"RequestPerDay"`
 }
+
 type ClientOptions struct {
-	DialTimeout  time.Duration `json:"dialTimeout"`
-	ReadTimeout  time.Duration `json:"readTimeout"`
-	WriteTimeout time.Duration `json:"writeTimeout"`
-	PoolTimeout  time.Duration `json:"poolTimeout"`
-	MaxRetries   int           `json:"maxRetries"`
+	DialTimeout  Duration `json:"dialTimeout"`
+	ReadTimeout  Duration `json:"readTimeout"`
+	WriteTimeout Duration `json:"writeTimeout"`
+	PoolTimeout  Duration `json:"poolTimeout"`
+	MaxRetries   int      `json:"maxRetries"`
 }
 
-func NewApplicationSettings() (*App, error) {
-	app, err := getAppSettingsJson("./application_settings.json")
+func NewApplication() (*App, error) {
+	app, err := loadJSON("./application_settings.json")
 	if err != nil {
 		return nil, err
 	}
-	// set env name keys to env keys
+
 	app.OpenAIKey = os.Getenv(app.OpenAIKey)
 	app.RedisURL = os.Getenv(app.RedisURL)
-	app.Port.Env = os.Getenv(app.Port.Env)
-	return app, err
+
+	port := os.Getenv(app.Port.Env)
+	if port == "" {
+		port = app.Port.Default
+	}
+	app.Port.Env = port
+
+	return app, nil
 }
 
-func getAppSettingsJson(path string) (*App, error) {
-	// reader of app json path
+func loadJSON(path string) (*App, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
