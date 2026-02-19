@@ -1,5 +1,11 @@
 package bootstrap
 
+import (
+	"encoding/json"
+	"os"
+	"time"
+)
+
 type App struct {
 	Port          string        `json:"env:port.key"`
 	RedisURL      string        `json:"env:redis-url.key"`
@@ -12,9 +18,27 @@ type RateLimits struct {
 	PerDay    int `json:"RequestPerDay"`
 }
 type ClientOptions struct {
-	DialTimeout  int `json:"dialTimeout"`
-	ReadTimeout  int `json:"readTimeout"`
-	WriteTimeout int `json:"writeTimeout"`
-	PoolTimeout  int `json:"poolTimeout"`
-	MaxRetries   int `json:"maxRetries"`
+	DialTimeout  time.Duration `json:"dialTimeout"`
+	ReadTimeout  time.Duration `json:"readTimeout"`
+	WriteTimeout time.Duration `json:"writeTimeout"`
+	PoolTimeout  time.Duration `json:"poolTimeout"`
+	MaxRetries   int           `json:"maxRetries"`
+}
+
+func getAppSettingsJson(path string) (*App, error) {
+	// reader of app json path
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var app App
+	decoder := json.NewDecoder(file)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&app); err != nil {
+		return nil, err
+	}
+	return &app, nil
 }
