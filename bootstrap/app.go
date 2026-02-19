@@ -7,11 +7,15 @@ import (
 )
 
 type App struct {
-	Port          string        `json:"env:port.key"`
+	Port          Port          `json:"port"`
 	RedisURL      string        `json:"env:redis-url.key"`
 	OpenAIKey     string        `json:"env:open-ai.key"`
 	RateLimits    RateLimits    `json:"rate-limit:limits"`
 	ClientOptions ClientOptions `json:"redis:client-opt"`
+}
+type Port struct {
+	Default string `json:"default"`
+	Env     string `json:"env"`
 }
 type RateLimits struct {
 	PerMinute int `json:"RequestPerMinute"`
@@ -30,11 +34,10 @@ func NewApplicationSettings() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	// set name keys to keys
+	// set env name keys to env keys
 	app.OpenAIKey = os.Getenv(app.OpenAIKey)
 	app.RedisURL = os.Getenv(app.RedisURL)
-	app.Port = os.Getenv(app.Port)
-
+	app.Port.Env = os.Getenv(app.Port.Env)
 	return app, err
 }
 
