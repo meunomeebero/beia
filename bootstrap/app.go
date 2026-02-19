@@ -25,6 +25,19 @@ type ClientOptions struct {
 	MaxRetries   int           `json:"maxRetries"`
 }
 
+func NewApplicationSettings() (*App, error) {
+	app, err := getAppSettingsJson("./application_settings.json")
+	if err != nil {
+		return nil, err
+	}
+	// set name keys to keys
+	app.OpenAIKey = os.Getenv(app.OpenAIKey)
+	app.RedisURL = os.Getenv(app.RedisURL)
+	app.Port = os.Getenv(app.Port)
+
+	return app, err
+}
+
 func getAppSettingsJson(path string) (*App, error) {
 	// reader of app json path
 	file, err := os.Open(path)
