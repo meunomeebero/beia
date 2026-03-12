@@ -15,8 +15,29 @@ REDIS_URL=redis://localhost:6379
 OPENAI_KEY=your_openai_api_key
 PORT=8080
 ```
-
-3. Run:
+3. (optional) Configure the rate limits in application_settings.json:
+```
+{
+  "port": {
+    "default": "8080",
+    "env": "PORT"
+  },
+  "env:redis-url.key": "REDIS_URL",
+  "env:open-ai.key": "OPENAI_KEY",
+  "redis:client-opt": {
+    "DialTimeout": "10s",
+    "ReadTimeout": "5s",
+    "WriteTimeout": "5s",
+    "PoolTimeout": "10s",
+    "MaxRetries": 3
+  },
+  "rate-limit:limits": {
+    "RequestPerDay": 100,
+    "RequestPerMinute": 10
+  }
+}
+```
+4. Run:
 ```bash
 go run main.go
 ```
